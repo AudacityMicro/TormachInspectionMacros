@@ -1,0 +1,32 @@
+START
+RESULTSFILE Probe-WCS1-RESULTS
+DOCUMENTID 38b84c50-b692-447a-97bb-4ba797f3dbc7
+MODELVERSION c7c66307-9124-4c83-8b98-73a333df154f
+TIMESTAMP 260618 92955
+
+
+TOOLPATHID 27.01001
+TOOLPATH Probe WCS1
+G331 N1 A0. B0. C-90. X0.81693 Y0.90551 Z0.69945
+G330 N1 A0. B0. C0. X0 Y0 Z0 I0 R0
+CYCLEDEPTH  -0.15811
+-------------------------------------------------------------------
+   COMPONENT NO 1                    FEATURE NO 1
+-------------------------------------------------------------------
+SIZE D1.1811   ACTUAL 1.21698   DEV 0.03588
+POSN X0.31496   ACTUAL 0.38863   DEV 0.07367
+POSN Y-0.23622   ACTUAL NaN   DEV NaN
+
+
+TOOLPATHID 30.01001
+TOOLPATH Probe WCS1 (2)
+G331 N1 A0. B0. C-90. X0.81693 Y0.90551 Z0.69945
+G330 N1 A0. B0. C0. X0 Y0 Z0 I0 R0
+CYCLEDEPTH  -0.15811
+-------------------------------------------------------------------
+   COMPONENT NO 2                    FEATURE NO 1
+-------------------------------------------------------------------
+SIZE D0.47244   ACTUAL 0.54314   DEV 0.0707
+POSN X0.19291   ACTUAL 0.13045   DEV -0.06247
+POSN Y0.17717   ACTUAL NaN   DEV NaN
+END
