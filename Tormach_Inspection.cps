@@ -671,8 +671,7 @@ function onOpen() {
 
   onCommand(COMMAND_START_CHIP_TRANSPORT);
   validateCommonParameters();
-  writeBlock("#<_featureNumber> = 0");
-  writeBlock("#<_componentNumber> = 0");
+  writeBlock("o<initialize_inspection> call");
 }
 
 function onParameter(name, value) {
