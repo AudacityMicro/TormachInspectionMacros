@@ -1450,6 +1450,9 @@ var inspectionResultsFileWritten = false;
 var inspectionToolpathIdFormat = createFormat({decimals:5, forceDecimal:true});
 var inspectionPatternInstances = new Array();
 var inspectionInitializePatternInstances = true;
+var inspectionComponentNumber = 0;
+var inspectionFeatureNumber = 0;
+var inspectionLastResultCycleKey;
 
 function inspectionLogCommand(command, text) {
   writeln("(" + command + "," + text + ")");
@@ -1561,7 +1564,7 @@ function inspectionWriteCADTransform() {
   var cadEuler = cadWorkPlane.getEuler2(EULER_XYZ_S);
   inspectionLogLine(
     "G331" +
-    " N1" +
+    " N" + inspectionFeatureNumber +
     " A" + abcFormat.format(cadEuler.x) +
     " B" + abcFormat.format(cadEuler.y) +
     " C" + abcFormat.format(cadEuler.z) +
@@ -1576,7 +1579,7 @@ function inspectionWriteWorkplaneTransform() {
   var abc = orientation.getEuler2(EULER_XYZ_S);
   inspectionLogLine(
     "G330" +
-    " N1" +
+    " N" + inspectionFeatureNumber +
     " A" + abcFormat.format(abc.x) +
     " B" + abcFormat.format(abc.y) +
     " C" + abcFormat.format(abc.z) +
@@ -1593,6 +1596,40 @@ function inspectionWriteToolpathInformation(cycleDepth) {
   inspectionWriteCADTransform();
   inspectionWriteWorkplaneTransform();
   inspectionLogLine("CYCLEDEPTH  " + inspectionXYZFormat.format(cycleDepth));
+  writeln("(LOGCLOSE)");
+}
+
+function inspectionGetResultCycleKey() {
+  var cycleId = cycle && ("cycleID" in cycle) ? cycle.cycleID : currentSection.getParameter("cycleID", 0);
+  return currentSection.getId() + ":" + cycleId;
+}
+
+function inspectionWriteResultBlockHeader(cycleDepth) {
+  var cycleKey = inspectionGetResultCycleKey();
+  var firstResultForCycle = cycleKey != inspectionLastResultCycleKey;
+
+  if (inspectionComponentNumber == 0) {
+    inspectionComponentNumber = 1;
+    inspectionFeatureNumber = 1;
+  } else if (firstResultForCycle && cycle && cycle.incrementComponent) {
+    inspectionComponentNumber++;
+    inspectionFeatureNumber = 1;
+  } else {
+    inspectionFeatureNumber++;
+  }
+
+  if (firstResultForCycle) {
+    inspectionWriteToolpathInformation(cycleDepth);
+  }
+
+  inspectionLastResultCycleKey = cycleKey;
+  inspectionLogCommand("LOGAPPEND", "RESULTS.TXT");
+  inspectionLogLine("-------------------------------------------------------------------");
+  inspectionLogLine(
+    "   COMPONENT NO " + inspectionComponentNumber +
+    "                    FEATURE NO " + inspectionFeatureNumber
+  );
+  inspectionLogLine("-------------------------------------------------------------------");
   writeln("(LOGCLOSE)");
 }
 
@@ -1617,8 +1654,7 @@ function writeProbePrintResults(cycleDepth) {
 
   if (printProbeResults() == true) {
     inspectionWriteResultsFileHeader();
-    inspectionWriteToolpathInformation(cycleDepth);
-    writeBlock("#<_featureNumber> = 0");
+    inspectionWriteResultBlockHeader(cycleDepth);
     writeBlock("#<_printResults> = 1");
   } else {
     writeBlock("#<_printResults> = 0");

@@ -145,8 +145,6 @@ G90 (set to absolute mode)
 
 O900 if [#<_printResults> EQ 1] (Skip results logging if not enabled)
 
-	#<_featureNumber> = FIX[[#<_featureNumber> + 1]] (Feature number should iterate every probing routine, and be set to 0 at the beginning of the program.)
-	#<_componentNumber> = FIX[[#<_componentNumber> + 1]] (Component number should iterate every program)
 
 	(X Location Math)
 	#<expectedX> = #<_x_wcs_offset>
@@ -160,9 +158,6 @@ O900 if [#<_printResults> EQ 1] (Skip results logging if not enabled)
 
 	(LOGAPPEND,RESULTS.TXT)
 
-	(LOG,-------------------------------------------------------------------)
-	(LOG,   COMPONENT NO #<_componentNumber>                    FEATURE NO #<_featureNumber>)
-	(LOG,-------------------------------------------------------------------)
 	(LOG,POSN X#<expectedX>   ACTUAL #<actualX>   DEV #<errorX>)
 	(LOG,POSN Y#<expectedY>   ACTUAL #<actualY>   DEV #<errorY>)
 
