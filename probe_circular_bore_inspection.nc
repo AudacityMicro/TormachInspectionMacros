@@ -7,18 +7,22 @@ o<probe_circular_bore_inspection> sub
 (PRINT, _x_wcs_offset is #<_x_wcs_offset>)
 (PRINT, _y_wcs_offset is #<_y_wcs_offset>)
 
-G91 (set to incremental mode)
-
 #1 = #5420 (current relative X position)
 #2 = #5421 (current relative Y position)
 #4 = #5220 (current active wcs)
+#<positive_x_probe_target> = [#1 + [#<_diameter_to_probe>/2]]
+#<negative_x_probe_target> = [#1 - [#<_diameter_to_probe>/2]]
+#<positive_y_probe_target> = [#2 + [#<_diameter_to_probe>/2]]
+#<negative_y_probe_target> = [#2 - [#<_diameter_to_probe>/2]]
 (PRINT, # 1 is #1)
 (PRINT, # 2 is #2)
 (PRINT, # 4 is #4)
 
+G90 (set to absolute mode)
+
 (fast probe)
 F#<_probe_rough_feed_per_min>
-G38.2 X[#<_diameter_to_probe>/2]
+G38.2 X#<positive_x_probe_target>
 (PRINT, first x touch successful)
 
 (first retract)
@@ -29,7 +33,7 @@ G90 (set to absolute mode)
 
 (slow probe)
 F#<_probe_fine_feed_per_min>
-G38.2 X[#<_diameter_to_probe>/2]
+G38.2 X#<positive_x_probe_target>
 (PRINT, second x touch successful)
 
 #<_first_x_touch> = #5420
@@ -48,7 +52,7 @@ G1 X#1 F#<_probe_rapid_feed_per_min>
 
 (fast probe)
 F#<_probe_rough_feed_per_min>
-G38.2 X[#<_diameter_to_probe>/-2]
+G38.2 X#<negative_x_probe_target>
 (PRINT, first x touch successful)
 
 (first retract)
@@ -59,7 +63,7 @@ G90 (set to absolute mode)
 
 (slow probe)
 F#<_probe_fine_feed_per_min>
-G38.2 X[#<_diameter_to_probe>/-2]
+G38.2 X#<negative_x_probe_target>
 (PRINT, second x touch successful)
 
 #<_second_x_touch> = #5420
@@ -89,7 +93,7 @@ G54.1 P#4
 
 (fast probe)
 F#<_probe_rough_feed_per_min>
-G38.2 Y[#<_diameter_to_probe>/2]
+G38.2 Y#<positive_y_probe_target>
 (PRINT, first y touch successful)
 
 (first retract)
@@ -100,7 +104,7 @@ G90 (set to absolute mode)
 
 (slow probe)
 F#<_probe_fine_feed_per_min>
-G38.2 Y[#<_diameter_to_probe>/2]
+G38.2 Y#<positive_y_probe_target>
 (PRINT, second y touch successful)
 
 #<_first_y_touch> = #5421
@@ -115,11 +119,10 @@ G90 (set to absolute mode)
 (return to start position)
 G90 (set to absolute mode)
 G1 Y#2 F#<_probe_rapid_feed_per_min>
-G91
 
 (fast probe)
 F#<_probe_rough_feed_per_min>
-G38.2 Y[#<_diameter_to_probe>/-2]
+G38.2 Y#<negative_y_probe_target>
 (PRINT, first y touch successful)
 
 (first retract)
@@ -130,7 +133,7 @@ G90 (set to absolute mode)
 
 (slow probe)
 F#<_probe_fine_feed_per_min>
-G38.2 Y[#<_diameter_to_probe>/-2]
+G38.2 Y#<negative_y_probe_target>
 (PRINT, second y touch successful)
 
 #<_second_y_touch> = #5421

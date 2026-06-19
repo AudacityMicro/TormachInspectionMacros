@@ -16,6 +16,18 @@ o<probe_boss_three_point_inspection> sub
 #4 = #5220 (current active wcs)
 #<_radius_to_position> = [#<_diameter_to_position> / 2]
 #<_radius_to_probe> = [#<_diameter_to_probe> / 2]
+#<first_position_x> = [#1 + [#<_radius_to_position> * COS[#<_first_vector>]]]
+#<first_position_y> = [#2 + [#<_radius_to_position> * SIN[#<_first_vector>]]]
+#<first_probe_x> = [#1 + [#<_radius_to_probe> * COS[#<_first_vector>]]]
+#<first_probe_y> = [#2 + [#<_radius_to_probe> * SIN[#<_first_vector>]]]
+#<second_position_x> = [#1 + [#<_radius_to_position> * COS[#<_second_vector>]]]
+#<second_position_y> = [#2 + [#<_radius_to_position> * SIN[#<_second_vector>]]]
+#<second_probe_x> = [#1 + [#<_radius_to_probe> * COS[#<_second_vector>]]]
+#<second_probe_y> = [#2 + [#<_radius_to_probe> * SIN[#<_second_vector>]]]
+#<third_position_x> = [#1 + [#<_radius_to_position> * COS[#<_third_vector>]]]
+#<third_position_y> = [#2 + [#<_radius_to_position> * SIN[#<_third_vector>]]]
+#<third_probe_x> = [#1 + [#<_radius_to_probe> * COS[#<_third_vector>]]]
+#<third_probe_y> = [#2 + [#<_radius_to_probe> * SIN[#<_third_vector>]]]
 
 
 (PRINT, # 1 is #1)
@@ -34,20 +46,20 @@ o1 endif
 G90 (set absolute mode)
 
 (first vector position)
-G1 @#<_radius_to_position> ^#<_first_vector> F#<_probe_rapid_feed_per_min>
+G1 X#<first_position_x> Y#<first_position_y> F#<_probe_rapid_feed_per_min>
 G1 Z#<_first_position_to_probe> F#<_probe_rough_feed_per_min>
 
 (PRINT, probing first vector)
 (fast probe)
-G38.2 @#<_radius_to_probe>
+G38.2 X#<first_probe_x> Y#<first_probe_y>
 (PRINT, first first_vector touch successful)
 
 (first retract)
-G38.6 @#<_radius_to_position>
+G38.6 X#<first_position_x> Y#<first_position_y>
 
 (slow probe)
 F#<_probe_fine_feed_per_min>
-G38.2 @#<_radius_to_probe>
+G38.2 X#<first_probe_x> Y#<first_probe_y>
 (PRINT, first_vector touch finished)
 
 #<_first_vector_x_location> = #5420
@@ -56,28 +68,28 @@ G38.2 @#<_radius_to_probe>
 (PRINT, _first_vector_x_location is #<_first_vector_x_location>)
 
 (retract from first touch point)
-G38.6 @#<_radius_to_position> F#<_probe_rapid_feed_per_min>
+G38.6 X#<first_position_x> Y#<first_position_y> F#<_probe_rapid_feed_per_min>
 G1 Z#3 (retract to original Z position)
 
 (return to start position)
-G1 X#1 Y#1 (retract to original XY position)
+G1 X#1 Y#2 (retract to original XY position)
 
 (PRINT, probing second vector)
 (second vector position)
-G1 @#<_radius_to_position> ^#<_second_vector> F#<_probe_rapid_feed_per_min>
+G1 X#<second_position_x> Y#<second_position_y> F#<_probe_rapid_feed_per_min>
 G1 Z#<_first_position_to_probe>
 
 (fast probe)
 F#<_probe_rough_feed_per_min>
-G38.2 @#<_radius_to_probe> 
+G38.2 X#<second_probe_x> Y#<second_probe_y>
 (PRINT, first second_vector touch successful)
 
 (second retract)
-G38.6 @#<_radius_to_position>
+G38.6 X#<second_position_x> Y#<second_position_y>
 
 (slow probe)
 F#<_probe_fine_feed_per_min>
-G38.2 @#<_radius_to_probe>
+G38.2 X#<second_probe_x> Y#<second_probe_y>
 (PRINT, second_vector touch finished)
 
 #<_second_vector_x_location> = #5420
@@ -86,27 +98,27 @@ G38.2 @#<_radius_to_probe>
 (PRINT, _second_vector_y_location is #<_second_vector_y_location>)
 
 (retract from second touch point)
-G38.6 @#<_radius_to_position> F#<_probe_rapid_feed_per_min>
+G38.6 X#<second_position_x> Y#<second_position_y> F#<_probe_rapid_feed_per_min>
 G1 Z#3 (retract to original Z position)
 
 (return to start position)
-G1 X#1 Y#1 (retract to original XY position)
+G1 X#1 Y#2 (retract to original XY position)
 
 (PRINT, probing third vector)
-(second vector position)
-G1 @#<_radius_to_position> ^#<_third_vector> F#<_probe_rapid_feed_per_min>
+(third vector position)
+G1 X#<third_position_x> Y#<third_position_y> F#<_probe_rapid_feed_per_min>
 G1 Z#<_first_position_to_probe>
 (fast probe)
 F#<_probe_rough_feed_per_min>
-G38.2 @#<_radius_to_probe> 
+G38.2 X#<third_probe_x> Y#<third_probe_y>
 (PRINT, first third_vector touch successful)
 
 (third retract)
-G38.6 @#<_radius_to_position>
+G38.6 X#<third_position_x> Y#<third_position_y>
 
 (slow probe)
 F#<_probe_fine_feed_per_min>
-G38.2 @#<_radius_to_probe>
+G38.2 X#<third_probe_x> Y#<third_probe_y>
 (PRINT, second third_vector touch successful)
 
 #<_third_vector_x_location> = #5420
@@ -115,11 +127,11 @@ G38.2 @#<_radius_to_probe>
 (PRINT, _third_vector_y_location is #<_third_vector_y_location>)
 
 (retract from third touch point)
-G38.6 @#<_radius_to_position> F#<_probe_rapid_feed_per_min>
+G38.6 X#<third_position_x> Y#<third_position_y> F#<_probe_rapid_feed_per_min>
 G1 Z#3 (retract to original Z position)
 
 (return to start position)
-G1 X#1 Y#1 (retract to original XY position)
+G1 X#1 Y#2 (retract to original XY position)
 
 (PRINT, probing of points finished, start of calculations)
 

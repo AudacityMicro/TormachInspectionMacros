@@ -12,6 +12,13 @@ o<probe_bore_three_point_inspection> sub
 #1 = #5420 (current relative X position)
 #2 = #5421 (current relative Y position)
 #4 = #5220 (current active wcs)
+#<probe_retract_distance> = [#5410/2]
+#<first_vector_x_target> = [#1 + [#<_diameter_to_probe> * COS[#<_first_vector>]]]
+#<first_vector_y_target> = [#2 + [#<_diameter_to_probe> * SIN[#<_first_vector>]]]
+#<second_vector_x_target> = [#1 + [#<_diameter_to_probe> * COS[#<_second_vector>]]]
+#<second_vector_y_target> = [#2 + [#<_diameter_to_probe> * SIN[#<_second_vector>]]]
+#<third_vector_x_target> = [#1 + [#<_diameter_to_probe> * COS[#<_third_vector>]]]
+#<third_vector_y_target> = [#2 + [#<_diameter_to_probe> * SIN[#<_third_vector>]]]
 (PRINT, # 1 is #1)
 (PRINT, # 2 is #2)
 (PRINT, # 4 is #4)
@@ -21,17 +28,17 @@ G90 (set absolute mode)
 (PRINT, probing first vector)
 (fast probe)
 F#<_probe_rough_feed_per_min>
-G38.2 @#<_diameter_to_probe> ^#<_first_vector>
+G38.2 X#<first_vector_x_target> Y#<first_vector_y_target>
 (PRINT, first first_vector touch successful)
 
 (first retract)
 G91 (set incremental mode)
-G38.6 @[[#5410/2]*-1]
+G38.6 X[[#<probe_retract_distance> * COS[#<_first_vector>]] * -1] Y[[#<probe_retract_distance> * SIN[#<_first_vector>]] * -1]
 G90 (set absolute mode)
 
 (slow probe)
 F#<_probe_fine_feed_per_min>
-G38.2 @#<_diameter_to_probe>
+G38.2 X#<first_vector_x_target> Y#<first_vector_y_target>
 (PRINT, second first_vector touch successful)
 
 #<_first_vector_x_location> = #5420
@@ -40,22 +47,25 @@ G38.2 @#<_diameter_to_probe>
 (PRINT, _first_vector_y_location is #<_first_vector_y_location>)
 
 (retract from first touch point)
-G38.6 X#1 Y#1 F#<_probe_rapid_feed_per_min>
+G91
+G38.6 X[[#<probe_retract_distance> * COS[#<_first_vector>]] * -1] Y[[#<probe_retract_distance> * SIN[#<_first_vector>]] * -1] F#<_probe_rapid_feed_per_min>
+G90
+G1 X#1 Y#2 F#<_probe_rapid_feed_per_min>
 
 (PRINT, probing second vector)
 (fast probe)
 F#<_probe_rough_feed_per_min>
-G38.2 @#<_diameter_to_probe> ^#<_second_vector>
+G38.2 X#<second_vector_x_target> Y#<second_vector_y_target>
 (PRINT, first second_vector touch successful)
 
 (second retract)
 G91 (set incremental mode)
-G38.6 @[[#5410/2]*-1]
+G38.6 X[[#<probe_retract_distance> * COS[#<_second_vector>]] * -1] Y[[#<probe_retract_distance> * SIN[#<_second_vector>]] * -1]
 G90 (set absolute mode)
 
 (slow probe)
 F#<_probe_fine_feed_per_min>
-G38.2 @#<_diameter_to_probe>
+G38.2 X#<second_vector_x_target> Y#<second_vector_y_target>
 (PRINT, second second_vector touch successful)
 
 #<_second_vector_x_location> = #5420
@@ -64,22 +74,25 @@ G38.2 @#<_diameter_to_probe>
 (PRINT, _second_vector_y_location is #<_second_vector_y_location>)
 
 (retract from second touch point)
-G38.6 X#1 Y#1 F#<_probe_rapid_feed_per_min>
+G91
+G38.6 X[[#<probe_retract_distance> * COS[#<_second_vector>]] * -1] Y[[#<probe_retract_distance> * SIN[#<_second_vector>]] * -1] F#<_probe_rapid_feed_per_min>
+G90
+G1 X#1 Y#2 F#<_probe_rapid_feed_per_min>
 
 (PRINT, probing third vector)
 (fast probe)
 F#<_probe_rough_feed_per_min>
-G38.2 @#<_diameter_to_probe> ^#<_third_vector>
+G38.2 X#<third_vector_x_target> Y#<third_vector_y_target>
 (PRINT, first third_vector touch successful)
 
 (third retract)
 G91 (set incremental mode)
-G38.6 @[[#5410/2]*-1]
+G38.6 X[[#<probe_retract_distance> * COS[#<_third_vector>]] * -1] Y[[#<probe_retract_distance> * SIN[#<_third_vector>]] * -1]
 G90 (set absolute mode)
 
 (slow probe)
 F#<_probe_fine_feed_per_min>
-G38.2 @#<_diameter_to_probe>
+G38.2 X#<third_vector_x_target> Y#<third_vector_y_target>
 (PRINT, second third_vector touch successful)
 
 #<_third_vector_x_location> = #5420
@@ -88,7 +101,10 @@ G38.2 @#<_diameter_to_probe>
 (PRINT, _third_vector_y_location is #<_third_vector_y_location>)
 
 (retract from third touch point)
-G38.6 X#1 Y#1 F#<_probe_rapid_feed_per_min>
+G91
+G38.6 X[[#<probe_retract_distance> * COS[#<_third_vector>]] * -1] Y[[#<probe_retract_distance> * SIN[#<_third_vector>]] * -1] F#<_probe_rapid_feed_per_min>
+G90
+G1 X#1 Y#2 F#<_probe_rapid_feed_per_min>
 
 (PRINT, probing of points finished, start of calculations)
 

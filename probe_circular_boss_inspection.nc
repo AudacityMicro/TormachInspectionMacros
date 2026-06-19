@@ -84,7 +84,7 @@ G90 (set to absolute mode)
 G1 Z#<_z_clearance_position> F#<_probe_rapid_feed_per_min>
 
 (PRINT, centering x)
-#<_x_center> = [#<_first_x_touch> + #<_second_x_touch>]
+#<_x_center> = [[#<_first_x_touch> + #<_second_x_touch>]/2]
 (PRINT, _x_center is #<_x_center>)
 G1 X#<_x_center> F#<_probe_rapid_feed_per_min>
 G54.1 P#<_measuring_wcs>
