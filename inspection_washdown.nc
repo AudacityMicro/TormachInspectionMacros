@@ -18,13 +18,15 @@ O140 if [#<_inspection_cleaning_rpm> GT 0]
 	S#<_inspection_cleaning_rpm> M3
 O140 endif
 
-O150 if [#<_inspection_cleaning_coolant_mode> EQ 1]
-	M8 (flood coolant on)
-O150 else
-	O160 if [#<_inspection_cleaning_coolant_mode> EQ 2]
-		M207 (through spindle coolant on)
+O150 if [#<_inspection_cleaning_coolant_mode> GT 0]
+	O160 if [#<_inspection_cleaning_coolant_mode> EQ 1]
+		M8 (flood coolant on)
 	O160 else
-		M7 (airblast on)
+		O170 if [#<_inspection_cleaning_coolant_mode> EQ 2]
+			M207 (through spindle coolant on)
+		O170 else
+			M7 (airblast on)
+		O170 endif
 	O160 endif
 O150 endif
 

@@ -185,6 +185,7 @@ properties = {
     group      : "programEnd",
     type       : "enum",
     values     : [
+      {title:"None", id:"none"},
       {title:"Coolant", id:"flood"},
       {title:"Through spindle coolant", id:"throughSpindle"},
       {title:"Airblast", id:"airblast"}
@@ -1842,7 +1843,7 @@ function inspectionWriteResultsFileEnd() {
 }
 
 function inspectionWriteProgramEndCall() {
-  var cleaningCoolantModes = {flood:1, throughSpindle:2, airblast:3};
+  var cleaningCoolantModes = {none:0, flood:1, throughSpindle:2, airblast:3};
   writeBlock("#<_inspection_end_x> = " + xyzFormat.format(getProperty("programEndLoadX")));
   writeBlock("#<_inspection_end_y> = " + xyzFormat.format(getProperty("programEndLoadY")));
   writeBlock("#<_inspection_end_change_tool> = " + (getProperty("programEndChangeTool") ? 1 : 0));
