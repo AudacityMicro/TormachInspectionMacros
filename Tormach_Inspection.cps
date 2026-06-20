@@ -84,16 +84,16 @@ properties = {
     kind       : "spatial"
   },
   programEndChangeTool: {
-    title      : "Change tool for cleaning cycle",
-    description: "Load the specified cleaning tool before running the program-end table washdown.",
+    title      : "Change tool after cleaning cycle",
+    description: "Load the specified final tool after cleaning and before moving to the unload position.",
     group      : "programEnd",
     type       : "boolean",
     value      : false,
     scope      : "post"
   },
   programEndToolNumber: {
-    title      : "Cleaning cycle tool number",
-    description: "Tool number to load when the cleaning-cycle tool change is enabled.",
+    title      : "Final tool number",
+    description: "Tool number to load when the final tool change is enabled.",
     group      : "programEnd",
     type       : "integer",
     value      : 1,
@@ -105,6 +105,22 @@ properties = {
     group      : "programEnd",
     type       : "boolean",
     value      : false,
+    scope      : "post"
+  },
+  programEndCleaningChangeTool: {
+    title      : "Change tool for cleaning cycle",
+    description: "Load the specified cleaning tool before running the program-end table washdown.",
+    group      : "programEnd",
+    type       : "boolean",
+    value      : false,
+    scope      : "post"
+  },
+  programEndCleaningToolNumber: {
+    title      : "Cleaning cycle tool number",
+    description: "Tool number to load when the cleaning-cycle tool change is enabled.",
+    group      : "programEnd",
+    type       : "integer",
+    value      : 1,
     scope      : "post"
   },
   programEndWashdownXMin: {
@@ -797,10 +813,18 @@ function onOpen() {
   }
   activateMachine(); // enable the machine optimizations and settings
 
-  if (getProperty("programEndWashdown") && getProperty("programEndChangeTool")) {
+  if (getProperty("programEndChangeTool")) {
     var programEndToolNumber = getProperty("programEndToolNumber");
     validate(
-      (programEndToolNumber >= 0) && (programEndToolNumber <= settings.maximumToolNumber),
+      (programEndToolNumber >= 1) && (programEndToolNumber <= settings.maximumToolNumber),
+      subst(localize("Final tool number must be between 1 and %1."), settings.maximumToolNumber)
+    );
+  }
+
+  if (getProperty("programEndWashdown") && getProperty("programEndCleaningChangeTool")) {
+    var programEndCleaningToolNumber = getProperty("programEndCleaningToolNumber");
+    validate(
+      (programEndCleaningToolNumber >= 0) && (programEndCleaningToolNumber <= settings.maximumToolNumber),
       subst(localize("Cleaning cycle tool number must be between 0 and %1."), settings.maximumToolNumber)
     );
   }
@@ -1848,6 +1872,8 @@ function inspectionWriteProgramEndCall() {
   writeBlock("#<_inspection_end_y> = " + xyzFormat.format(getProperty("programEndLoadY")));
   writeBlock("#<_inspection_end_change_tool> = " + (getProperty("programEndChangeTool") ? 1 : 0));
   writeBlock("#<_inspection_end_tool_number> = " + toolFormat.format(getProperty("programEndToolNumber")));
+  writeBlock("#<_inspection_cleaning_change_tool> = " + (getProperty("programEndCleaningChangeTool") ? 1 : 0));
+  writeBlock("#<_inspection_cleaning_tool_number> = " + toolFormat.format(getProperty("programEndCleaningToolNumber")));
   writeBlock("#<_inspection_washdown_enabled> = " + (getProperty("programEndWashdown") ? 1 : 0));
   writeBlock("#<_inspection_washdown_x_min> = " + xyzFormat.format(getProperty("programEndWashdownXMin")));
   writeBlock("#<_inspection_washdown_x_max> = " + xyzFormat.format(getProperty("programEndWashdownXMax")));

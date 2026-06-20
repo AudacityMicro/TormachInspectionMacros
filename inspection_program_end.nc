@@ -9,20 +9,20 @@ G49 (cancel tool length compensation)
 G53 G0 Z0 (fully retract Z in machine coordinates)
 
 O90 if [#<_inspection_washdown_enabled> EQ 1]
-	O95 if [#<_inspection_end_change_tool> EQ 1]
-		O96 if [#<_inspection_end_tool_number> EQ 0]
+	O95 if [#<_inspection_cleaning_change_tool> EQ 1]
+		O96 if [#<_inspection_cleaning_tool_number> EQ 0]
 			#<skip_washdown> = 1
 		O96 endif
-		O97 if [#<_inspection_end_tool_number> EQ 99]
+		O97 if [#<_inspection_cleaning_tool_number> EQ 99]
 			#<skip_washdown> = 1
 		O97 endif
-		O98 if [#<_inspection_end_tool_number> EQ 1000]
+		O98 if [#<_inspection_cleaning_tool_number> EQ 1000]
 			#<skip_washdown> = 1
 		O98 endif
 
 		O99 if [#<skip_washdown> EQ 0]
-			O100 if [#5400 NE #<_inspection_end_tool_number>]
-				T#<_inspection_end_tool_number> G43 H#<_inspection_end_tool_number> M6
+			O100 if [#5400 NE #<_inspection_cleaning_tool_number>]
+				T#<_inspection_cleaning_tool_number> G43 H#<_inspection_cleaning_tool_number> M6
 			O100 endif
 			G49
 			G53 G0 Z0 (retract again after the tool-change remap)
@@ -45,6 +45,14 @@ O90 if [#<_inspection_washdown_enabled> EQ 1]
 		o<inspection_washdown> call
 	O115 endif
 O90 endif
+
+O117 if [#<_inspection_end_change_tool> EQ 1]
+	O118 if [#5400 NE #<_inspection_end_tool_number>]
+		T#<_inspection_end_tool_number> G43 H#<_inspection_end_tool_number> M6
+	O118 endif
+	G49
+	G53 G0 Z0 (retract again after the final tool-change remap)
+O117 endif
 
 G53 G0 X#<_inspection_end_x> Y#<_inspection_end_y>
 
