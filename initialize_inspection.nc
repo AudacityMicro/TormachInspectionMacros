@@ -15,6 +15,8 @@ o<initialize_inspection> sub
 #<_inspection_washdown_z> = 0 (set by the post before the program-end macro)
 #<_inspection_washdown_passes> = 0 (set by the post before the program-end macro)
 #<_inspection_washdown_feed> = 0 (set by the post before the program-end macro)
+#<_inspection_cleaning_rpm> = 0 (cleaning spindle remains stopped by default)
+#<_inspection_cleaning_coolant_mode> = 1 (flood coolant by default)
 #<_inspection_archive_results> = 0 (archive only when results were generated)
 
 o<initialize_inspection> endsub

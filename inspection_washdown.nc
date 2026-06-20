@@ -13,7 +13,20 @@ G49
 G53 G0 Z0 (approach the washdown envelope at safe Z)
 G53 G0 X#<_inspection_washdown_x_min> Y#<_inspection_washdown_y_min>
 G53 G0 Z#<_inspection_washdown_z>
-M8 (flood coolant on)
+
+O140 if [#<_inspection_cleaning_rpm> GT 0]
+	S#<_inspection_cleaning_rpm> M3
+O140 endif
+
+O150 if [#<_inspection_cleaning_coolant_mode> EQ 1]
+	M8 (flood coolant on)
+O150 else
+	O160 if [#<_inspection_cleaning_coolant_mode> EQ 2]
+		M207 (through spindle coolant on)
+	O160 else
+		M7 (airblast on)
+	O160 endif
+O150 endif
 
 O110 while [#<washdown_pass> LT #<_inspection_washdown_passes>]
 	O120 if [#<washdown_pass> GT 0]
@@ -31,7 +44,8 @@ O110 while [#<washdown_pass> LT #<_inspection_washdown_passes>]
 	#<washdown_pass> = [#<washdown_pass> + 1]
 O110 endwhile
 
-M9 (flood coolant off)
+M9 (cleaning coolant or airblast off)
+M5 (spindle off)
 G53 G0 Z0
 
 o<inspection_washdown> endsub

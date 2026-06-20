@@ -84,16 +84,16 @@ properties = {
     kind       : "spatial"
   },
   programEndChangeTool: {
-    title      : "Change tool at program end",
-    description: "Load the specified tool before moving to the final load position.",
+    title      : "Change tool for cleaning cycle",
+    description: "Load the specified cleaning tool before running the program-end table washdown.",
     group      : "programEnd",
     type       : "boolean",
     value      : false,
     scope      : "post"
   },
   programEndToolNumber: {
-    title      : "Program-end tool number",
-    description: "Tool number to load when the program-end tool change is enabled.",
+    title      : "Cleaning cycle tool number",
+    description: "Tool number to load when the cleaning-cycle tool change is enabled.",
     group      : "programEnd",
     type       : "integer",
     value      : 1,
@@ -169,6 +169,28 @@ properties = {
     value      : "50in",
     scope      : "post",
     kind       : "spatial"
+  },
+  programEndCleaningRPM: {
+    title      : "Cleaning cycle RPM",
+    description: "Spindle speed used during the cleaning cycle. Set to 0 to leave the spindle stopped.",
+    group      : "programEnd",
+    type       : "integer",
+    range      : [0, 50000],
+    value      : 0,
+    scope      : "post"
+  },
+  programEndCleaningCoolant: {
+    title      : "Cleaning cycle coolant",
+    description: "Select the coolant or air mode used while the cleaning raster runs.",
+    group      : "programEnd",
+    type       : "enum",
+    values     : [
+      {title:"Coolant", id:"flood"},
+      {title:"Through spindle coolant", id:"throughSpindle"},
+      {title:"Airblast", id:"airblast"}
+    ],
+    value: "flood",
+    scope: "post"
   },
   useM06: {
     title      : "Use M6",
@@ -774,11 +796,11 @@ function onOpen() {
   }
   activateMachine(); // enable the machine optimizations and settings
 
-  if (getProperty("programEndChangeTool")) {
+  if (getProperty("programEndWashdown") && getProperty("programEndChangeTool")) {
     var programEndToolNumber = getProperty("programEndToolNumber");
     validate(
       (programEndToolNumber >= 1) && (programEndToolNumber <= settings.maximumToolNumber),
-      subst(localize("Program-end tool number must be between 1 and %1."), settings.maximumToolNumber)
+      subst(localize("Cleaning cycle tool number must be between 1 and %1."), settings.maximumToolNumber)
     );
   }
 
@@ -798,6 +820,10 @@ function onOpen() {
     validate(
       getProperty("programEndWashdownFeed") > 0,
       localize("Washdown feed rate must be greater than 0.")
+    );
+    validate(
+      getProperty("programEndCleaningRPM") >= 0,
+      localize("Cleaning cycle RPM cannot be negative.")
     );
   }
 
@@ -1816,6 +1842,7 @@ function inspectionWriteResultsFileEnd() {
 }
 
 function inspectionWriteProgramEndCall() {
+  var cleaningCoolantModes = {flood:1, throughSpindle:2, airblast:3};
   writeBlock("#<_inspection_end_x> = " + xyzFormat.format(getProperty("programEndLoadX")));
   writeBlock("#<_inspection_end_y> = " + xyzFormat.format(getProperty("programEndLoadY")));
   writeBlock("#<_inspection_end_change_tool> = " + (getProperty("programEndChangeTool") ? 1 : 0));
@@ -1828,6 +1855,8 @@ function inspectionWriteProgramEndCall() {
   writeBlock("#<_inspection_washdown_z> = " + xyzFormat.format(getProperty("programEndWashdownZ")));
   writeBlock("#<_inspection_washdown_passes> = " + toolFormat.format(getProperty("programEndWashdownPasses")));
   writeBlock("#<_inspection_washdown_feed> = " + feedFormat.format(getProperty("programEndWashdownFeed")));
+  writeBlock("#<_inspection_cleaning_rpm> = " + rpmFormat.format(getProperty("programEndCleaningRPM")));
+  writeBlock("#<_inspection_cleaning_coolant_mode> = " + cleaningCoolantModes[getProperty("programEndCleaningCoolant")]);
   writeBlock("#<_inspection_archive_results> = " + (inspectionResultsFileWritten ? 1 : 0));
   writeBlock("o<inspection_program_end> call");
 }
