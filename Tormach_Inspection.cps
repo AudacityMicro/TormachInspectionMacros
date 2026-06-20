@@ -799,8 +799,8 @@ function onOpen() {
   if (getProperty("programEndWashdown") && getProperty("programEndChangeTool")) {
     var programEndToolNumber = getProperty("programEndToolNumber");
     validate(
-      (programEndToolNumber >= 1) && (programEndToolNumber <= settings.maximumToolNumber),
-      subst(localize("Cleaning cycle tool number must be between 1 and %1."), settings.maximumToolNumber)
+      (programEndToolNumber >= 0) && (programEndToolNumber <= settings.maximumToolNumber),
+      subst(localize("Cleaning cycle tool number must be between 0 and %1."), settings.maximumToolNumber)
     );
   }
 
