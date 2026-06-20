@@ -727,7 +727,41 @@ function writeMeasureTool() {
   }
 }
 
+function parseSpatialProperties() {
+  for (var property in properties) {
+    if (properties[property].kind && properties[property].kind == "spatial") {
+      if (properties[property].type != "string") {
+        error(localize("Spatial unit properties must be defined with a type of \"string\"."));
+      }
+      if (properties[property].scope.indexOf("operation") != -1) {
+        error(localize("Spatial properties with scope \"operation\" are currently not supported."));
+      }
+
+      var text = getProperty(property).toString().toUpperCase();
+      var unitStr = text.replace(/[^A-Z]/g, "");
+      var value = text.slice(0, text.length - 2);
+
+      if (unitStr != "IN" && unitStr != "MM") {
+        error(subst(localize("Unsupported unit \"%1\" entered for property \"%2\". Only 'IN' and 'MM' are supported."), unitStr, property));
+      }
+      if (value.indexOf(",") != -1) {
+        error(subst(localize("Invalid decimal separator 'comma' entered for property \"%1\". Only 'point' is supported."), property));
+      }
+
+      properties[property].value = Number(value);
+      if (isNaN(properties[property].value)) {
+        error(subst(localize("Invalid numeric value of \"%1\" entered for property \"%2\"."), value, property));
+      }
+      setProperty(property, properties[property].value *= (unitStr == "IN" && unit == MM) ? 25.4 :
+        ((unitStr == "MM" && unit == IN) ? 1 / 25.4 : 1)
+      );
+    }
+  }
+}
+
 function onOpen() {
+  parseSpatialProperties();
+
   // define and enable machine configuration
   receivedMachineConfiguration = machineConfiguration.isReceived();
   if (typeof defineMachine == "function") {
