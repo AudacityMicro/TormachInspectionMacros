@@ -737,11 +737,16 @@ function parseSpatialProperties() {
         error(localize("Spatial properties with scope \"operation\" are currently not supported."));
       }
 
-      var text = getProperty(property).toString().toUpperCase();
-      var unitStr = text.replace(/[^A-Z]/g, "");
-      var value = text.slice(0, text.length - 2);
+      var propertyValue = getProperty(property);
+      if (typeof propertyValue == "number") {
+        continue;
+      }
 
-      if (unitStr != "IN" && unitStr != "MM") {
+      var text = propertyValue.toString().toUpperCase();
+      var unitStr = text.replace(/[^A-Z]/g, "");
+      var value = unitStr ? text.slice(0, text.length - 2) : text;
+
+      if (unitStr && unitStr != "IN" && unitStr != "MM") {
         error(subst(localize("Unsupported unit \"%1\" entered for property \"%2\". Only 'IN' and 'MM' are supported."), unitStr, property));
       }
       if (value.indexOf(",") != -1) {
@@ -752,8 +757,8 @@ function parseSpatialProperties() {
       if (isNaN(properties[property].value)) {
         error(subst(localize("Invalid numeric value of \"%1\" entered for property \"%2\"."), value, property));
       }
-      setProperty(property, properties[property].value *= (unitStr == "IN" && unit == MM) ? 25.4 :
-        ((unitStr == "MM" && unit == IN) ? 1 / 25.4 : 1)
+      setProperty(property, properties[property].value *= unitStr ?
+        ((unitStr == "IN" && unit == MM) ? 25.4 : ((unitStr == "MM" && unit == IN) ? 1 / 25.4 : 1)) : 1
       );
     }
   }
