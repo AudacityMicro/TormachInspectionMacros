@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# PathPilot user M-code: archive a complete Fusion inspection report.
+# Install in ~/gcode as M199 and mark executable with: chmod 755 ~/gcode/M199
+
+set -u
+
+script_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+source_file="${script_dir}/RESULTS.TXT"
+results_dir="${script_dir}/results"
+error_log="${results_dir}/archive-errors.log"
+
+warn_and_finish() {
+  message="$1"
+  timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
+  printf 'WARNING: %s\n' "$message" >&2
+  if mkdir -p -- "$results_dir" 2>/dev/null; then
+    printf '%s WARNING: %s\n' "$timestamp" "$message" >> "$error_log" 2>/dev/null || true
+  fi
+  exit 0
+}
+
+[ -f "$source_file" ] || warn_and_finish "Inspection results were not archived because RESULTS.TXT does not exist."
+
+first_line="$(sed -n '1{s/\r$//;p;}' "$source_file")"
+last_line="$(awk 'NF {line=$0} END {sub(/\r$/, "", line); print line}' "$source_file")"
+[ "$first_line" = "START" ] || warn_and_finish "Inspection results were not archived because RESULTS.TXT does not begin with START."
+[ "$last_line" = "END" ] || warn_and_finish "Inspection results were not archived because RESULTS.TXT does not end with END."
+
+report_name="$(awk '/^RESULTSFILE[[:space:]]+/ {sub(/^RESULTSFILE[[:space:]]+/, ""); sub(/\r$/, ""); print; exit}' "$source_file")"
+[ -n "$report_name" ] || report_name="RESULTS"
+report_name="$(printf '%s' "$report_name" | sed -e 's/[[:space:]][[:space:]]*/-/g' -e 's/[^A-Za-z0-9._-]/-/g' -e 's/--*/-/g' -e 's/^-//' -e 's/-$//')"
+[ -n "$report_name" ] || report_name="RESULTS"
+
+mkdir -p -- "$results_dir" || warn_and_finish "Inspection results directory could not be created: ${results_dir}"
+
+run_timestamp="$(date '+%Y%m%d-%H%M%S')"
+base_target="${results_dir}/${report_name}-${run_timestamp}"
+target_file="${base_target}.TXT"
+suffix=1
+while [ -e "$target_file" ]; do
+  formatted_suffix="$(printf '%02d' "$suffix")"
+  target_file="${base_target}-${formatted_suffix}.TXT"
+  suffix=$((suffix + 1))
+done
+
+temporary_file="${target_file}.tmp.$$"
+if ! cp -- "$source_file" "$temporary_file"; then
+  rm -f -- "$temporary_file"
+  warn_and_finish "Inspection results could not be copied to ${target_file}"
+fi
+if ! mv -- "$temporary_file" "$target_file"; then
+  rm -f -- "$temporary_file"
+  warn_and_finish "Inspection results archive could not be finalized at ${target_file}"
+fi
+
+printf 'Inspection results archived: %s\n' "$target_file"
+exit 0

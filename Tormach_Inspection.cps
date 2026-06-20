@@ -65,6 +65,40 @@ properties = {
     value: "G30",
     scope: "post"
   },
+  programEndLoadX: {
+    title      : "End load position X",
+    description: "G53 X-axis machine position used for part loading and unloading at program end.",
+    group      : "programEnd",
+    type       : "string",
+    value      : "4.54in",
+    scope      : "post",
+    kind       : "spatial"
+  },
+  programEndLoadY: {
+    title      : "End load position Y",
+    description: "G53 Y-axis machine position used for part loading and unloading at program end.",
+    group      : "programEnd",
+    type       : "string",
+    value      : "13.43in",
+    scope      : "post",
+    kind       : "spatial"
+  },
+  programEndChangeTool: {
+    title      : "Change tool at program end",
+    description: "Load the specified tool before moving to the final load position.",
+    group      : "programEnd",
+    type       : "boolean",
+    value      : false,
+    scope      : "post"
+  },
+  programEndToolNumber: {
+    title      : "Program-end tool number",
+    description: "Tool number to load when the program-end tool change is enabled.",
+    group      : "programEnd",
+    type       : "integer",
+    value      : 1,
+    scope      : "post"
+  },
   useM06: {
     title      : "Use M6",
     description: "Disable to avoid outputting M6.",
@@ -325,7 +359,8 @@ properties = {
 // define the custom property groups
 groupDefinitions = {
   coolant: {title:"Coolant", order:51, collapsed:true, description:"Smart/Multi-Coolant options."},
-  tapping: {title:"Tapping", order:52, collapsed:true, description:"Tapping options."}
+  tapping: {title:"Tapping", order:52, collapsed:true, description:"Tapping options."},
+  programEnd: {title:"Program End", order:53, collapsed:false, description:"Program-end loading position, tool change, and inspection archive options."}
 };
 
 // wcs definiton
@@ -628,6 +663,14 @@ function onOpen() {
     defineMachine(); // hardcoded machine configuration
   }
   activateMachine(); // enable the machine optimizations and settings
+
+  if (getProperty("programEndChangeTool")) {
+    var programEndToolNumber = getProperty("programEndToolNumber");
+    validate(
+      (programEndToolNumber >= 1) && (programEndToolNumber <= settings.maximumToolNumber),
+      subst(localize("Program-end tool number must be between 1 and %1."), settings.maximumToolNumber)
+    );
+  }
 
   if (getProperty("useRadius")) {
     maximumCircularSweep = toRad(90); // avoid potential center calculation errors for CNC
@@ -1643,6 +1686,15 @@ function inspectionWriteResultsFileEnd() {
   writeln("(LOGCLOSE)");
 }
 
+function inspectionWriteProgramEndCall() {
+  writeBlock("#<_inspection_end_x> = " + xyzFormat.format(getProperty("programEndLoadX")));
+  writeBlock("#<_inspection_end_y> = " + xyzFormat.format(getProperty("programEndLoadY")));
+  writeBlock("#<_inspection_end_change_tool> = " + (getProperty("programEndChangeTool") ? 1 : 0));
+  writeBlock("#<_inspection_end_tool_number> = " + toolFormat.format(getProperty("programEndToolNumber")));
+  writeBlock("#<_inspection_archive_results> = " + (inspectionResultsFileWritten ? 1 : 0));
+  writeBlock("o<inspection_program_end> call");
+}
+
 function writeProbePrintResults(cycleDepth) {
   if (cycle.width1 != undefined) {
     writeBlock("#<_FeatureLength> = " + xyzFormat.format(cycle.width1));
@@ -2056,18 +2108,16 @@ function onReturnFromSafeRetractPosition(_x, _y, _z) {
 function onClose() {
   optionalSection = false;
   writeln("");
-  writeRetract(Z);
-  if (getSetting("retract.homeXY.onProgramEnd", false)) {
-    writeRetract(settings.retract.homeXY.onProgramEnd);
-  }
   setSmoothing(false);
   if (machineConfiguration.isMultiAxisConfiguration()) {
+    writeRetract(Z);
     unwindABC(new Vector(0, 0, 0), true);
     positionABC(new Vector(0, 0, 0), true);
   }
   // Process Manual NC commands
   executeManualNC();
   inspectionWriteResultsFileEnd();
+  inspectionWriteProgramEndCall();
   writeBlock(mFormat.format(30)); // stop program, spindle stop, coolant off
   writeln("%");
 }
