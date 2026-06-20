@@ -6,6 +6,10 @@ G90
 G49 (cancel tool length compensation)
 G53 G0 Z0 (fully retract Z in machine coordinates)
 
+O90 if [#<_inspection_washdown_enabled> EQ 1]
+	o<inspection_washdown> call
+O90 endif
+
 O100 if [#<_inspection_end_change_tool> EQ 1]
 	O110 if [#5400 NE #<_inspection_end_tool_number>]
 		T#<_inspection_end_tool_number> G43 H#<_inspection_end_tool_number> M6

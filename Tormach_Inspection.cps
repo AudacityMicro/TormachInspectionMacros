@@ -99,6 +99,77 @@ properties = {
     value      : 1,
     scope      : "post"
   },
+  programEndWashdown: {
+    title      : "Program-end table washdown",
+    description: "Run the configured G53 table-washdown raster with flood coolant before the final tool change and load-position move.",
+    group      : "programEnd",
+    type       : "boolean",
+    value      : false,
+    scope      : "post"
+  },
+  programEndWashdownXMin: {
+    title      : "Washdown X minimum",
+    description: "Minimum G53 X position for the table-washdown raster.",
+    group      : "programEnd",
+    type       : "string",
+    value      : "0in",
+    scope      : "post",
+    kind       : "spatial"
+  },
+  programEndWashdownXMax: {
+    title      : "Washdown X maximum",
+    description: "Maximum G53 X position for the table-washdown raster.",
+    group      : "programEnd",
+    type       : "string",
+    value      : "18in",
+    scope      : "post",
+    kind       : "spatial"
+  },
+  programEndWashdownYMin: {
+    title      : "Washdown Y minimum",
+    description: "Minimum G53 Y position for the table-washdown raster.",
+    group      : "programEnd",
+    type       : "string",
+    value      : "0in",
+    scope      : "post",
+    kind       : "spatial"
+  },
+  programEndWashdownYMax: {
+    title      : "Washdown Y maximum",
+    description: "Maximum G53 Y position for the table-washdown raster.",
+    group      : "programEnd",
+    type       : "string",
+    value      : "12in",
+    scope      : "post",
+    kind       : "spatial"
+  },
+  programEndWashdownZ: {
+    title      : "Washdown Z height",
+    description: "G53 Z position used while running the table-washdown raster.",
+    group      : "programEnd",
+    type       : "string",
+    value      : "0in",
+    scope      : "post",
+    kind       : "spatial"
+  },
+  programEndWashdownPasses: {
+    title      : "Washdown passes",
+    description: "Number of alternating X traverses distributed from the minimum Y position to the maximum Y position.",
+    group      : "programEnd",
+    type       : "integer",
+    range      : [1, 100],
+    value      : 4,
+    scope      : "post"
+  },
+  programEndWashdownFeed: {
+    title      : "Washdown feed rate",
+    description: "Feed rate for G53 X and Y table-washdown motion.",
+    group      : "programEnd",
+    type       : "string",
+    value      : "50in",
+    scope      : "post",
+    kind       : "spatial"
+  },
   useM06: {
     title      : "Use M6",
     description: "Disable to avoid outputting M6.",
@@ -360,7 +431,7 @@ properties = {
 groupDefinitions = {
   coolant: {title:"Coolant", order:51, collapsed:true, description:"Smart/Multi-Coolant options."},
   tapping: {title:"Tapping", order:52, collapsed:true, description:"Tapping options."},
-  programEnd: {title:"Program End", order:53, collapsed:false, description:"Program-end loading position, tool change, and inspection archive options."}
+  programEnd: {title:"Program End", order:53, collapsed:false, description:"Program-end washdown, loading position, tool change, and inspection archive options."}
 };
 
 // wcs definiton
@@ -669,6 +740,25 @@ function onOpen() {
     validate(
       (programEndToolNumber >= 1) && (programEndToolNumber <= settings.maximumToolNumber),
       subst(localize("Program-end tool number must be between 1 and %1."), settings.maximumToolNumber)
+    );
+  }
+
+  if (getProperty("programEndWashdown")) {
+    validate(
+      getProperty("programEndWashdownXMax") > getProperty("programEndWashdownXMin"),
+      localize("Washdown X maximum must be greater than washdown X minimum.")
+    );
+    validate(
+      getProperty("programEndWashdownYMax") >= getProperty("programEndWashdownYMin"),
+      localize("Washdown Y maximum must be greater than or equal to washdown Y minimum.")
+    );
+    validate(
+      getProperty("programEndWashdownPasses") >= 1,
+      localize("Washdown passes must be at least 1.")
+    );
+    validate(
+      getProperty("programEndWashdownFeed") > 0,
+      localize("Washdown feed rate must be greater than 0.")
     );
   }
 
@@ -1691,6 +1781,14 @@ function inspectionWriteProgramEndCall() {
   writeBlock("#<_inspection_end_y> = " + xyzFormat.format(getProperty("programEndLoadY")));
   writeBlock("#<_inspection_end_change_tool> = " + (getProperty("programEndChangeTool") ? 1 : 0));
   writeBlock("#<_inspection_end_tool_number> = " + toolFormat.format(getProperty("programEndToolNumber")));
+  writeBlock("#<_inspection_washdown_enabled> = " + (getProperty("programEndWashdown") ? 1 : 0));
+  writeBlock("#<_inspection_washdown_x_min> = " + xyzFormat.format(getProperty("programEndWashdownXMin")));
+  writeBlock("#<_inspection_washdown_x_max> = " + xyzFormat.format(getProperty("programEndWashdownXMax")));
+  writeBlock("#<_inspection_washdown_y_min> = " + xyzFormat.format(getProperty("programEndWashdownYMin")));
+  writeBlock("#<_inspection_washdown_y_max> = " + xyzFormat.format(getProperty("programEndWashdownYMax")));
+  writeBlock("#<_inspection_washdown_z> = " + xyzFormat.format(getProperty("programEndWashdownZ")));
+  writeBlock("#<_inspection_washdown_passes> = " + toolFormat.format(getProperty("programEndWashdownPasses")));
+  writeBlock("#<_inspection_washdown_feed> = " + feedFormat.format(getProperty("programEndWashdownFeed")));
   writeBlock("#<_inspection_archive_results> = " + (inspectionResultsFileWritten ? 1 : 0));
   writeBlock("o<inspection_program_end> call");
 }
