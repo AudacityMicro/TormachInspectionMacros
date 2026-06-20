@@ -101,7 +101,7 @@ properties = {
   },
   programEndWashdown: {
     title      : "Program-end table washdown",
-    description: "Run the configured G53 table-washdown raster with flood coolant before the final tool change and load-position move.",
+    description: "Run the configured G53 table-washdown raster with the selected cleaning mode before the final tool change and load-position move.",
     group      : "programEnd",
     type       : "boolean",
     value      : false,
@@ -208,6 +208,14 @@ properties = {
     ],
     value: "flood",
     scope: "post"
+  },
+  programEndArchiveResults: {
+    title      : "Archive inspection results with M199",
+    description: "Copy completed inspection results to the timestamped results folder. Disable this when the PathPilot M199 helper is not installed.",
+    group      : "programEnd",
+    type       : "boolean",
+    value      : true,
+    scope      : "post"
   },
   useM06: {
     title      : "Use M6",
@@ -1884,7 +1892,7 @@ function inspectionWriteProgramEndCall() {
   writeBlock("#<_inspection_washdown_feed> = " + feedFormat.format(getProperty("programEndWashdownFeed")));
   writeBlock("#<_inspection_cleaning_rpm> = " + rpmFormat.format(getProperty("programEndCleaningRPM")));
   writeBlock("#<_inspection_cleaning_coolant_mode> = " + cleaningCoolantModes[getProperty("programEndCleaningCoolant")]);
-  writeBlock("#<_inspection_archive_results> = " + (inspectionResultsFileWritten ? 1 : 0));
+  writeBlock("#<_inspection_archive_results> = " + ((inspectionResultsFileWritten && getProperty("programEndArchiveResults")) ? 1 : 0));
   writeBlock("o<inspection_program_end> call");
 }
 
