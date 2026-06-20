@@ -64,7 +64,7 @@ G90 (set to absolute mode)
 G1 Z#<_z_clearance_position> F#<_probe_rapid_feed_per_min>
 
 (second X position)
-G1 X#<_second_x_position> Y#<_second_y_position> 
+G1 X#<_second_x_position> Y#<_second_y_position>
 G1 Z#<_second_z_position> F#<_probe_rough_feed_per_min>
 
 #<_second_starting_position> = #5420
@@ -115,7 +115,7 @@ G1 X#<_x_center>
 G54.1 P#<_measuring_wcs>
 
 O901 if [#<_dont_change_WCS> NE 1] (If don't change, set back to starting value)
-	G10 L20 P#5220 X#<_x_wcs_offset> 
+	G10 L20 P#5220 X#<_x_wcs_offset>
 O901 endif
 
 G54.1 P#4
@@ -123,7 +123,7 @@ G54.1 P#4
 
 O900 if [#<_printResults> EQ 1] (Skip results logging if not enabled)
 
-	
+
 	(Size Math)
 	#<expectedSize> = #<_FeatureLength>
 	#<actualSize> = [ABS[[#<_first_x_touch>-#<_second_x_touch>]]-#5410]

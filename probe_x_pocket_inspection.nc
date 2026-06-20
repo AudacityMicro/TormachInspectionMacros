@@ -11,7 +11,7 @@ o<probe_x_pocket_inspection> sub
 (PRINT, _measuring_wcs is #<_measuring_wcs>)
 (PRINT, _x_wcs_offset is #<_x_wcs_offset>)
 
-G90 (set to incremental mode)
+G90 (set to absolute mode)
 
 #1 = #5420 (current relative X position)
 #2 = #5421 (current relative Y position)
@@ -30,7 +30,7 @@ G38.2 X#<_first_position_to_probe>
 (first retract)
 G91 (set to incremental mode)
 F#<_probe_rough_feed_per_min>
-o100 if [#<_metric> EQ 1]  
+o100 if [#<_metric> EQ 1]
 	G38.6 X-.1
 	o100 else
 	G38.6 X-.05
@@ -49,7 +49,7 @@ G38.2 X#<_first_position_to_probe>
 (second retract)
 G91 (set to incremental mode)
 F#<_probe_rough_feed_per_min>
-o101 if [#<_metric> EQ 1]  
+o101 if [#<_metric> EQ 1]
 	G38.6 X-.1
 	o101 else
 	G38.6 X-.05
@@ -70,7 +70,7 @@ G38.2 X#<_second_position_to_probe>
 (first retract)
 G91 (set to incremental mode)
 F#<_probe_rough_feed_per_min>
-o110 if [#<_metric> EQ 1]  
+o110 if [#<_metric> EQ 1]
 	G38.6 X.1
 	o110 else
 	G38.6 X.05
@@ -89,7 +89,7 @@ G38.2 X#<_second_position_to_probe>
 (X finished retract)
 G91 (set to incremental mode)
 F#<_probe_rough_feed_per_min>
-o102 if [#<_metric> EQ 1]  
+o102 if [#<_metric> EQ 1]
 	G38.6 X.1
 	o102 else
 	G38.6 X.05
@@ -106,7 +106,7 @@ G1 X#<_x_center> F#<_probe_rough_feed_per_min>
 G54.1 P#<_measuring_wcs>
 
 O901 if [#<_dont_change_WCS> NE 1] (If don't change, set back to starting value)
-	G10 L20 P#5220 X#<_x_wcs_offset> 
+	G10 L20 P#5220 X#<_x_wcs_offset>
 O901 endif
 
 G54.1 P#4

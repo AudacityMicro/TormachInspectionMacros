@@ -84,5 +84,3 @@ O900 endif (end of results logging)
 
 (PRINT, end probe_x_edge probe)
 o<probe_x_edge_inspection> endsub
-
-M02 (end program)

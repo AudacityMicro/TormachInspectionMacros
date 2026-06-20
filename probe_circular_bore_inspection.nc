@@ -77,14 +77,14 @@ G90 (set to absolute mode)
 
 (PRINT, centering x)
 M66 P0 L0 (queue buster)
-#<_x_center> = [[#<_first_x_touch> + #<_second_x_touch>]/2] (Might be wrong??? AJ tweaked OG code because he doesn't understand how the old version worked)
+#<_x_center> = [[#<_first_x_touch> + #<_second_x_touch>]/2]
 (PRINT, _x_center is #<_x_center>)
 G1 X#<_x_center> F#<_probe_rapid_feed_per_min>
 G54.1 P#<_measuring_wcs>
 
 
 O901 if [#<_dont_change_WCS> NE 1] (If don't change, set back to starting value)
-	G10 L20 P#5220 X#<_x_wcs_offset> 
+	G10 L20 P#5220 X#<_x_wcs_offset>
 O901 endif
 
 G54.1 P#4
@@ -147,7 +147,7 @@ G90 (set to absolute mode)
 
 (PRINT, centering y)
 M66 P0 L0 (queue buster)
-#<_y_center> = [[#<_first_y_touch> + #<_second_y_touch>]/2]  (Might be wrong??? AJ tweaked OG code because he doesn't understand how the old version worked)
+#<_y_center> = [[#<_first_y_touch> + #<_second_y_touch>]/2]
 (PRINT, _y_center is #<_y_center>)
 G1 Y#<_y_center> F#<_probe_rapid_feed_per_min>
 G54.1 P#<_measuring_wcs>

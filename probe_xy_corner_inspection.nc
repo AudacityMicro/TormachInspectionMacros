@@ -52,8 +52,8 @@ o160 if [#<_first_position_to_probe> GT #<_first_starting_position>]
 		O901 if [#<_dont_change_WCS> NE 1] (If don't change, set back to starting value)
 			G10 L20 P#5220 X#<actualX>
 		O901 endif
-    	
-		
+
+
     o160 else
 		#<actualX> = [#<_first_x_touch> - [#5410/2]]
 
@@ -116,14 +116,14 @@ o260 if [#<_second_position_to_probe> GT #<_second_starting_position>]
 
 		O903 if [#<_dont_change_WCS> NE 1] (If don't change, set back to starting value)
 			G10 L20 P#5220 Y#<actualY>
-		O903 endif		
-		
+		O903 endif
+
     o260 else
 		#<actualY> = [#<_second_y_touch> - [#5410/2]]
 
 		O904 if [#<_dont_change_WCS> NE 1] (If don't change, set back to starting value)
     		G10 L20 P#5220 Y#<actualY>
-		O904 endif		
+		O904 endif
 
 o260 endif
 
@@ -167,5 +167,3 @@ O900 endif (end of results logging)
 
 (PRINT, end probe_xy_outer_corner probe)
 o<probe_xy_corner_inspection> endsub
-
-M02 (end program)

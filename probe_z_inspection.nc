@@ -19,7 +19,7 @@ G38.2 Z#<_first_position_to_probe>
 (first retract)
 G91 (set to incremental mode)
 F#<_probe_rough_feed_per_min>
-o100 if [#<_metric> EQ 1]  
+o100 if [#<_metric> EQ 1]
 	o110 if [#<_first_position_to_probe> GT #<_first_starting_position>]
 		G38.6 Z-.1
 	o110 else
@@ -50,7 +50,7 @@ O901 endif
 (second retract)
 G91 (set to incremental mode)
 F#<_probe_rough_feed_per_min>
-o130 if [#<_metric> EQ 1]  
+o130 if [#<_metric> EQ 1]
 	o140 if [#<_first_position_to_probe> GT #<_first_starting_position>]
 	G38.6 Z-.1
 	o140 else

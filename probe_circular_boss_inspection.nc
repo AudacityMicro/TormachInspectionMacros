@@ -90,7 +90,7 @@ G1 X#<_x_center> F#<_probe_rapid_feed_per_min>
 G54.1 P#<_measuring_wcs>
 
 O901 if [#<_dont_change_WCS> NE 1] (If don't change, set back to starting value)
-	G10 L20 P#5220 X#<_x_wcs_offset> 
+	G10 L20 P#5220 X#<_x_wcs_offset>
 O901 endif
 
 G54.1 P#4
@@ -209,5 +209,3 @@ O900 endif (end of results logging)
 
 (PRINT, end probe_bore_four_point probe)
 o<probe_circular_boss_inspection> endsub
-
-M02 (end program)

@@ -30,7 +30,7 @@ G38.2 Y#<_first_position_to_probe>
 (first retract)
 G91 (set to incremental mode)
 F#<_probe_rough_feed_per_min>
-o100 if [#<_metric> EQ 1]  
+o100 if [#<_metric> EQ 1]
 	G38.6 Y-.1
 	o100 else
 	G38.6 Y-.05
@@ -49,7 +49,7 @@ G38.2 Y#<_first_position_to_probe>
 (second retract)
 G91 (set to incremental mode)
 F#<_probe_rough_feed_per_min>
-o101 if [#<_metric> EQ 1]  
+o101 if [#<_metric> EQ 1]
 	G38.6 Y-.1
 	o101 else
 	G38.6 Y-.05
@@ -71,7 +71,7 @@ G38.2 Y#<_second_position_to_probe>
 (first retract)
 G91 (set to incremental mode)
 F#<_probe_rough_feed_per_min>
-o110 if [#<_metric> EQ 1]  
+o110 if [#<_metric> EQ 1]
 	G38.6 Y.1
 	o110 else
 	G38.6 Y.05
@@ -90,7 +90,7 @@ G38.2 Y#<_second_position_to_probe>
 (Y finished retract)
 G91 (set to incremental mode)
 F#<_probe_rough_feed_per_min>
-o102 if [#<_metric> EQ 1]  
+o102 if [#<_metric> EQ 1]
 	G38.6 Y.1
 	o102 else
 	G38.6 Y.05

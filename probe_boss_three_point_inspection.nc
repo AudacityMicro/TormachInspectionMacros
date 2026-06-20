@@ -5,7 +5,7 @@ o<probe_boss_three_point_inspection> sub
 (PRINT, _second_vector is #<_second_vector>)
 (PRINT, _third_vector is #<_third_vector>)
 (PRINT, _diameter_to_probe is #<_diameter_to_probe>)
-(PRINT, _diameter_to_position is #<_diameter_to_position)
+(PRINT, _diameter_to_position is #<_diameter_to_position>)
 (PRINT, _measuring_wcs is #<_measuring_wcs>)
 (PRINT, _x_wcs_offset is #<_x_wcs_offset>)
 (PRINT, _y_wcs_offset is #<_y_wcs_offset>)

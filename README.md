@@ -5,6 +5,26 @@ probing cycles. It also provides a configurable program-end routine for safe Z
 retraction, optional table washdown, optional tool changes, an unload position,
 and optional timestamped result archiving.
 
+## Pre-release status
+
+This project is currently intended for controlled development testing. Static
+validation passes, but the complete physical-machine matrix has not been signed
+off. See [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) for the current release
+decision and [MACHINE_TEST_CHECKLIST.md](MACHINE_TEST_CHECKLIST.md) for the
+required PathPilot tests.
+
+Development to date has used PathPilot 2.14.3 and Autodesk post engine 5.370.5.
+Those versions are audit context, not a final supported-version guarantee.
+
+## Project documentation
+
+| Document | Purpose |
+| --- | --- |
+| [README.md](README.md) | Installation, configuration, operation, and troubleshooting. |
+| [CHANGELOG.md](CHANGELOG.md) | Notable project changes. |
+| [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) | Current readiness decision, blockers, and release procedure. |
+| [MACHINE_TEST_CHECKLIST.md](MACHINE_TEST_CHECKLIST.md) | Physical machine test matrix and approval record. |
+
 The post always creates a Fusion-compatible `RESULTS.TXT` when at least one
 Fusion probe operation has **Print Results** enabled. The optional `M199` helper
 copies each completed report into a timestamped archive so the next run cannot
@@ -26,6 +46,8 @@ overwrite the only copy.
 | `inspection_washdown.nc` | Configurable G53 table-washdown raster | `~/gcode/subroutines` |
 | `M199` | Optional timestamped result archive helper | `~/gcode/M199` |
 | `Target Format.txt` | Reference example of Fusion result-file formatting | Do not install |
+| `scripts/validate_repository.py` | Static repository and macro validation | Development only |
+| `tests/test_m199.sh` | Archive-helper integration tests | Development only |
 
 On PathPilot, `~` means `/home/operator`. The PathPilot network share normally
 appears in Windows as `\\Tormach\gcode`. If it is mapped as drive `Z:`, then:
@@ -76,8 +98,9 @@ part. All probing, WCS, washdown, final-tool, and unload functions still work.
 Use this mode to retain every completed report automatically.
 
 1. Install the post, all `.nc` macros, and `M199`.
-2. Make `M199` executable on the PathPilot controller.
-3. Restart PathPilot so LinuxCNC discovers the user M-code.
+2. Confirm `M199` is executable on the PathPilot controller.
+3. Restart PathPilot. LinuxCNC discovers newly installed user M-codes during
+   startup, so this restart is mandatory even when the file is already correct.
 4. Leave **Archive inspection results with M199** enabled in the post.
 
 The current report remains at `~/gcode/RESULTS.TXT`, and a copy is created at:
@@ -167,11 +190,11 @@ PathPilot: /home/operator/gcode/M199
 It must be named exactly `M199`, with an uppercase `M` and no file extension.
 Do not put it in the `subroutines` or `results` folder.
 
-### Make it executable
+### Confirm permissions and restart
 
-Windows SMB copies do not reliably preserve Linux executable permissions.
-Perform this step on the PathPilot controller after initially copying or
-replacing `M199`.
+PathPilot must restart after a new user M-code is installed. Before restarting,
+confirm the Linux executable permission because Windows SMB copies do not
+reliably preserve it.
 
 1. Connect a keyboard to the PathPilot controller.
 2. Open a Linux terminal. `Ctrl+Alt+T` opens a terminal on typical PathPilot 2
@@ -191,11 +214,11 @@ ls -l /home/operator/gcode/M199
 ```
 
 5. Close the terminal and restart PathPilot or restart the controller. LinuxCNC
-   must restart after a new `M100` through `M199` helper is installed.
+   builds its user M-code list during startup.
 
-If the program reports `Unknown m code used: M199`, the file is missing, is in
-the wrong folder, is not executable, has the wrong name, or PathPilot was not
-restarted after installation.
+If the program reports `Unknown m code used: M199` immediately after installing
+the file, restart PathPilot first. If the error remains after restart, check the
+name, location, and executable permission.
 
 ## Configure the Post
 
@@ -261,17 +284,19 @@ T1000 tool. Select a normal cleaning tool number if washdown is required.
 
 ### Entering inch and metric values
 
-Every spatial Program End property must include an explicit unit suffix:
+Spatial Program End properties accept either an explicit unit suffix or a bare
+number:
 
 ```text
 4.54in
 115.316mm
 ```
 
-Do not enter a bare number such as `4.54`. Fusion will report that only `IN` and
-`MM` are supported. The post converts these settings to the active program
-units. Feed-rate values also require the suffix; for example, use `50in` for 50
-inches per minute or `1270mm` for 1270 millimeters per minute.
+An explicit suffix is recommended because it remains unambiguous if the Fusion
+program changes between inch and metric output. The post converts suffixed
+values to the active program units. A bare value is interpreted directly in the
+active program units. For feed, `50in` means 50 inches per minute and `1270mm`
+means 1270 millimeters per minute; a bare `50` means 50 active units per minute.
 
 ## Create an Inspection Program in Fusion
 
@@ -443,15 +468,19 @@ The initialization macro was not called or could not be found.
 
 ### `Unknown m code used: M199`
 
-Either disable **Archive inspection results with M199** and repost, or complete
-the M199 installation:
+If `M199` was just installed, restart PathPilot. A correct new user M-code is not
+recognized until startup. If the error remains after restart, verify the file:
 
 ```bash
 chmod 755 /home/operator/gcode/M199
 ls -l /home/operator/gcode/M199
 ```
 
-Then restart PathPilot. The expected permission prefix is `-rwxr-xr-x`.
+The expected permission prefix is `-rwxr-xr-x`. The file must be named exactly
+`M199`, have no extension, and be located at `/home/operator/gcode/M199`.
+
+To run without the helper, disable **Archive inspection results with M199** and
+repost the program.
 
 ### One part's results overwrite another part
 
@@ -480,8 +509,9 @@ tool, or turn off the washdown.
 
 ### Post error: unsupported unit `""`
 
-Add `in` or `mm` to every Program End coordinate and feed value. For example,
-use `18in`, not `18`.
+The installed post is outdated. The current post accepts unitless values and
+explicit `in` or `mm` suffixes. Replace `Tormach_Inspection.cps` in Fusion's Post
+Library, reopen the Post Process dialog, and post again.
 
 ### Archive did not appear
 
@@ -501,6 +531,25 @@ use `18in`, not `18`.
 
 Do not mix macros and posts from different revisions. The post and macros share
 named global-variable contracts and must be updated together.
+
+## Developer validation
+
+Run the cross-platform static checks from the repository root:
+
+```text
+python scripts/validate_repository.py
+```
+
+On Linux or Git Bash, also run:
+
+```text
+bash -n M199 tests/test_m199.sh
+bash tests/test_m199.sh
+```
+
+GitHub Actions runs these checks on pushes to `main` and on pull requests. The
+Autodesk post-engine interrogation and physical PathPilot checklist remain
+manual release gates because those runtimes are not available in GitHub Actions.
 
 ## Removing the Package
 
