@@ -11,6 +11,8 @@ below is resolved and evidence is recorded.
 
 Audit date: 2026-06-20
 
+GitHub tracking issue: [#1 - Release readiness](https://github.com/AudacityMicro/TormachInspectionMacros/issues/1)
+
 ## Completed repository checks
 
 - [x] Autodesk post engine accepts `Tormach_Inspection.cps` using post engine

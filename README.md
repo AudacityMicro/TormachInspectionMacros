@@ -12,6 +12,7 @@ validation passes, but the complete physical-machine matrix has not been signed
 off. See [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) for the current release
 decision and [MACHINE_TEST_CHECKLIST.md](MACHINE_TEST_CHECKLIST.md) for the
 required PathPilot tests.
+Remaining release work is tracked in [GitHub issue #1](https://github.com/AudacityMicro/TormachInspectionMacros/issues/1).
 
 Development to date has used PathPilot 2.14.3 and Autodesk post engine 5.370.5.
 Those versions are audit context, not a final supported-version guarantee.
