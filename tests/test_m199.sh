@@ -19,6 +19,7 @@ esac
 EOF
 chmod 755 "$test_dir/bin/date"
 export PATH="$test_dir/bin:$PATH"
+export M199_GCODE_DIR="$test_dir"
 
 cat > "$test_dir/RESULTS.TXT" <<'EOF'
 START
@@ -35,6 +36,8 @@ cp -- "$test_dir/RESULTS.TXT" "$test_dir/expected.txt"
 first_archive="$test_dir/results/Setup-1-RESULTS-20260620-120000.TXT"
 test -f "$first_archive"
 cmp -- "$test_dir/expected.txt" "$first_archive"
+grep -q "M199 invoked; source=$test_dir/RESULTS.TXT" "$test_dir/results/archive-events.log"
+grep -q "Archived $first_archive" "$test_dir/results/archive-events.log"
 
 "$test_dir/M199"
 test -f "$test_dir/results/Setup-1-RESULTS-20260620-120000-01.TXT"

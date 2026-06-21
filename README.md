@@ -104,7 +104,9 @@ Use this mode to retain every completed report automatically.
    startup, so this restart is mandatory even when the file is already correct.
 4. Leave **Archive inspection results with M199** enabled in the post.
 
-The current report remains at `~/gcode/RESULTS.TXT`, and a copy is created at:
+The helper resolves the report from `$HOME/gcode` rather than its process
+working directory. The current report remains at `~/gcode/RESULTS.TXT`, and a
+copy is created at:
 
 ```text
 ~/gcode/results/<RESULTSFILE>-YYYYMMDD-HHMMSS.TXT
@@ -112,7 +114,8 @@ The current report remains at `~/gcode/RESULTS.TXT`, and a copy is created at:
 
 If two archives receive the same name in the same second, `M199` adds a numeric
 suffix. An aborted or incomplete report is not archived. Archive warnings are
-written to `~/gcode/results/archive-errors.log`; an archive failure does not
+written to `~/gcode/results/archive-errors.log`; every helper invocation is
+recorded in `~/gcode/results/archive-events.log`. An archive failure does not
 prevent the machine from completing `M30`.
 
 ## Download the Files
@@ -571,6 +574,9 @@ Library, reopen the Post Process dialog, and post again.
 - Confirm `RESULTS.TXT` starts with `START` and ends with `END`.
 - Confirm M199 archiving is enabled in the post.
 - Confirm `M199` is executable.
+- Check `~/gcode/results/archive-events.log`. If it does not exist after a run,
+  PathPilot did not execute `M199`; reapply executable permission and restart
+  PathPilot.
 - Check `~/gcode/results/archive-errors.log`.
 - Confirm the PathPilot system clock is correct.
 

@@ -304,7 +304,15 @@ def validate_archive_helper(validation: Validation) -> None:
     )
     validation.require(listing.startswith("100755 "), "M199: Git mode must be 100755")
     text = data.decode("ascii")
-    for token in ("START", "END", "RESULTSFILE", "archive-errors.log"):
+    for token in (
+        "M199_GCODE_DIR",
+        "${HOME:-/home/operator}/gcode",
+        "START",
+        "END",
+        "RESULTSFILE",
+        "archive-errors.log",
+        "archive-events.log",
+    ):
         validation.require(token in text, f"M199: missing {token} handling")
 
 

@@ -5,18 +5,27 @@
 
 set -u
 
-script_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-source_file="${script_dir}/RESULTS.TXT"
-results_dir="${script_dir}/results"
+# LinuxCNC may invoke a user M-code by its bare name, so $0 is not a reliable
+# way to locate the PathPilot gcode share. The override is used by tests and
+# also permits nonstandard controller installations.
+gcode_dir="${M199_GCODE_DIR:-${HOME:-/home/operator}/gcode}"
+source_file="${gcode_dir}/RESULTS.TXT"
+results_dir="${gcode_dir}/results"
 error_log="${results_dir}/archive-errors.log"
+activity_log="${results_dir}/archive-events.log"
+
+mkdir -p -- "$results_dir" || {
+  printf 'WARNING: Inspection results directory could not be created: %s\n' "$results_dir" >&2
+  exit 0
+}
+
+printf '%s M199 invoked; source=%s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$source_file" >> "$activity_log" 2>/dev/null || true
 
 warn_and_finish() {
   message="$1"
   timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
   printf 'WARNING: %s\n' "$message" >&2
-  if mkdir -p -- "$results_dir" 2>/dev/null; then
-    printf '%s WARNING: %s\n' "$timestamp" "$message" >> "$error_log" 2>/dev/null || true
-  fi
+  printf '%s WARNING: %s\n' "$timestamp" "$message" >> "$error_log" 2>/dev/null || true
   exit 0
 }
 
@@ -31,8 +40,6 @@ report_name="$(awk '/^RESULTSFILE[[:space:]]+/ {sub(/^RESULTSFILE[[:space:]]+/, 
 [ -n "$report_name" ] || report_name="RESULTS"
 report_name="$(printf '%s' "$report_name" | sed -e 's/[[:space:]][[:space:]]*/-/g' -e 's/[^A-Za-z0-9._-]/-/g' -e 's/--*/-/g' -e 's/^-//' -e 's/-$//')"
 [ -n "$report_name" ] || report_name="RESULTS"
-
-mkdir -p -- "$results_dir" || warn_and_finish "Inspection results directory could not be created: ${results_dir}"
 
 run_timestamp="$(date '+%Y%m%d-%H%M%S')"
 base_target="${results_dir}/${report_name}-${run_timestamp}"
@@ -55,4 +62,5 @@ if ! mv -- "$temporary_file" "$target_file"; then
 fi
 
 printf 'Inspection results archived: %s\n' "$target_file"
+printf '%s Archived %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$target_file" >> "$activity_log" 2>/dev/null || true
 exit 0

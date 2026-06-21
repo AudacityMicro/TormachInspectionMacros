@@ -7,6 +7,8 @@ yet published a versioned release.
 
 ### Added
 
+- M199 invocation and successful-archive diagnostics in
+  `results/archive-events.log`.
 - Fusion-compatible inspection result headers, transforms, toolpath records,
   feature numbering, and `START`/`END` framing.
 - Initialization of inspection global variables at program start.
@@ -33,6 +35,8 @@ yet published a versioned release.
 
 ### Fixed
 
+- Resolve the M199 report path from the PathPilot gcode directory instead of
+  the user M-code process working directory.
 - Absolute versus incremental probe-target errors in circular and three-point
   routines.
 - Off-origin three-point feature targeting and safe returns.
