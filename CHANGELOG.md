@@ -21,6 +21,15 @@ yet published a versioned release.
 - Beginner installation, configuration, operation, import, and troubleshooting
   documentation.
 - Automated static macro validation and `M199` integration tests.
+- Tool breakage selection for every non-probe tool or a comma-separated tool
+  list, while preserving Fusion's existing per-tool Break Control selection.
+- Optional suppression of Fusion tool-library Break Control flags when breakage
+  selection must be controlled entirely by post settings.
+- An overriding comma-separated ignore list that excludes selected tools from
+  every automatic break-detection source.
+- Optional `G53 G0 Z0` retract immediately before G37 tool break detection for
+  machines with electronic tool setter line-of-sight limitations.
+- Final-tool break detection at normal program completion.
 
 ### Fixed
 

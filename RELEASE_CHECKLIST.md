@@ -55,6 +55,8 @@ GitHub tracking issue: [#1 - Release readiness](https://github.com/AudacityMicro
   already-loaded-tool case and T0/T99/T1000 washdown guards.
 - [ ] Verify M199 success, same-second collision, incomplete-report warning, and
   archive folder creation on PathPilot itself.
+- [ ] Verify every-tool, check-list, overriding ignore-list, Fusion Break Control
+  honor/ignore, final-tool, and fully-retracted G37 behavior on PathPilot.
 - [ ] Review the final diff and generated G-code with a second qualified person.
 
 ## Release procedure

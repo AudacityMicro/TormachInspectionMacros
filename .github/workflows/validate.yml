@@ -28,3 +28,6 @@ jobs:
 
       - name: Test result archiving
         run: bash tests/test_m199.sh
+
+      - name: Test tool breakage selection
+        run: node tests/test_tool_breakage_logic.js

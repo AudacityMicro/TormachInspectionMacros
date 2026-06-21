@@ -17,7 +17,7 @@ legal = "Copyright (C) 2012-2025 by Autodesk, Inc.";
 certificationLevel = 2;
 minimumRevision = 45917;
 
-longDescription = "Tormach PathPilot post for 3-axis and 4-axis milling with SmartCool support.";
+longDescription = "Tormach PathPilot post for 3-axis and 4-axis milling with Fusion inspection logging, configurable tool-break detection, SmartCool support, and program-end automation.";
 
 extension = "nc";
 setCodePage("ascii");
@@ -390,10 +390,50 @@ properties = {
     range      : [0.01, 2.0],
     scope      : "post"
   },
+  toolBreakageCheckEveryTool: {
+    title      : "Check every tool",
+    description: "Run tool break detection after the last operation for every non-probe tool.",
+    group      : "toolBreakage",
+    type       : "boolean",
+    value      : false,
+    scope      : "post"
+  },
+  toolBreakageCheckList: {
+    title      : "Check list of tools",
+    description: "Comma-separated tool numbers to check, for example: 1, 2, 7. Fusion tool break-control selections are also honored.",
+    group      : "toolBreakage",
+    type       : "string",
+    value      : "",
+    scope      : "post"
+  },
+  toolBreakageIgnoreFusionFlag: {
+    title      : "Ignore Fusion tool library break detection flag",
+    description: "Ignore Fusion's per-tool Break Control flag and use only the post's every-tool and tool-list selections.",
+    group      : "toolBreakage",
+    type       : "boolean",
+    value      : false,
+    scope      : "post"
+  },
+  toolBreakageIgnoreList: {
+    title      : "Ignore list of tools",
+    description: "Comma-separated tool numbers that must never receive automatic break detection. This overrides every other selection source.",
+    group      : "toolBreakage",
+    type       : "string",
+    value      : "",
+    scope      : "post"
+  },
+  toolBreakageFullyRetract: {
+    title      : "Fully retract before starting tool break detection",
+    description: "Output G53 G0 Z0 before G37 so the spindle does not block the electronic tool setter line of sight.",
+    group      : "toolBreakage",
+    type       : "boolean",
+    value      : false,
+    scope      : "post"
+  },
   toolBreakageTolerance: {
     title      : "Tool breakage tolerance",
     description: "Specifies the tolerance for which tool break detection will raise an alarm.",
-    group      : "preferences",
+    group      : "toolBreakage",
     type       : "spatial",
     value      : 0.1,
     scope      : "post"
@@ -478,7 +518,8 @@ properties = {
 groupDefinitions = {
   coolant: {title:"Coolant", order:51, collapsed:true, description:"Smart/Multi-Coolant options."},
   tapping: {title:"Tapping", order:52, collapsed:true, description:"Tapping options."},
-  programEnd: {title:"Program End", order:53, collapsed:false, description:"Program-end washdown, loading position, tool change, and inspection archive options."}
+  programEnd: {title:"Program End", order:53, collapsed:false, description:"Program-end washdown, loading position, tool change, and inspection archive options."},
+  toolBreakage: {title:"Tool Breakage Detection", order:54, collapsed:false, description:"Select tools for G37 break detection and configure electronic tool setter clearance."}
 };
 
 // wcs definiton
@@ -543,6 +584,8 @@ var maxTappingRetractSpeed = 2000;
 // collected state
 var coolantZHeight;
 var toolChecked = false; // specifies that the tool has been checked with the probe
+var toolBreakageCheckToolNumbers = [];
+var toolBreakageIgnoreToolNumbers = [];
 
 var settings = {
   coolant: {
@@ -774,6 +817,70 @@ function writeMeasureTool() {
   }
 }
 
+function parseToolBreakageCheckList() {
+  toolBreakageCheckToolNumbers = [];
+  var value = String(getProperty("toolBreakageCheckList") || "").replace(/^\s+|\s+$/g, "");
+  if (!value) {
+    return;
+  }
+
+  var entries = value.split(",");
+  for (var i = 0; i < entries.length; ++i) {
+    var entry = entries[i].replace(/^\s+|\s+$/g, "");
+    if (!/^\d+$/.test(entry)) {
+      error(localize("Check list of tools must contain only whole tool numbers separated by commas."));
+      continue;
+    }
+
+    var toolNumber = parseInt(entry, 10);
+    validate(
+      (toolNumber >= 1) && (toolNumber <= settings.maximumToolNumber),
+      subst(localize("Tool breakage check tool number must be between 1 and %1."), settings.maximumToolNumber)
+    );
+    if (toolBreakageCheckToolNumbers.indexOf(toolNumber) == -1) {
+      toolBreakageCheckToolNumbers.push(toolNumber);
+    }
+  }
+}
+
+function parseToolBreakageIgnoreList() {
+  toolBreakageIgnoreToolNumbers = [];
+  var value = String(getProperty("toolBreakageIgnoreList") || "").replace(/^\s+|\s+$/g, "");
+  if (!value) {
+    return;
+  }
+
+  var entries = value.split(",");
+  for (var i = 0; i < entries.length; ++i) {
+    var entry = entries[i].replace(/^\s+|\s+$/g, "");
+    if (!/^\d+$/.test(entry)) {
+      error(localize("Ignore list of tools must contain only whole tool numbers separated by commas."));
+      continue;
+    }
+
+    var toolNumber = parseInt(entry, 10);
+    validate(
+      (toolNumber >= 1) && (toolNumber <= settings.maximumToolNumber),
+      subst(localize("Tool breakage ignore tool number must be between 1 and %1."), settings.maximumToolNumber)
+    );
+    if (toolBreakageIgnoreToolNumbers.indexOf(toolNumber) == -1) {
+      toolBreakageIgnoreToolNumbers.push(toolNumber);
+    }
+  }
+}
+
+function shouldCheckToolBreakage(tool) {
+  if (!tool || (tool.type == TOOL_PROBE)) {
+    return false;
+  }
+  if (toolBreakageIgnoreToolNumbers.indexOf(tool.number) != -1) {
+    return false;
+  }
+  var fusionBreakControl = !getProperty("toolBreakageIgnoreFusionFlag") && tool.breakControl;
+  return fusionBreakControl || getProperty("toolBreakageCheckEveryTool") ||
+    (toolBreakageCheckToolNumbers.indexOf(tool.number) != -1);
+}
+
 function parseSpatialProperties() {
   for (var property in properties) {
     if (properties[property].kind && properties[property].kind == "spatial") {
@@ -813,6 +920,8 @@ function parseSpatialProperties() {
 
 function onOpen() {
   parseSpatialProperties();
+  parseToolBreakageCheckList();
+  parseToolBreakageIgnoreList();
 
   // define and enable machine configuration
   receivedMachineConfiguration = machineConfiguration.isReceived();
@@ -2124,6 +2233,10 @@ function onCommand(command) {
   case COMMAND_BREAK_CONTROL:
     if (!toolChecked) { // avoid duplicate COMMAND_BREAK_CONTROL
       prepareForToolCheck();
+      if (getProperty("toolBreakageFullyRetract")) {
+        gMotionModal.reset();
+        writeBlock(gFormat.format(53), gMotionModal.format(0), "Z0");
+      }
       writeBlock(gFormat.format(37), "P" + xyzFormat.format(getProperty("toolBreakageTolerance")));
       toolChecked = true;
     }
@@ -2193,22 +2306,24 @@ function onSectionEnd() {
     writeBlock(gFeedModeModal.format(94)); // inverse time feed off
   }
 
+  var isLastOperationForTool = isLastSection() ||
+    isToolChangeNeeded(getNextSection(), getProperty("toolAsName") ? "description" : "number");
+
   if (!isLastSection()) {
     if (getNextSection().getTool().coolant != tool.coolant) {
       onCommand(COMMAND_COOLANT_OFF);
     }
-    if (tool.breakControl && isToolChangeNeeded(getNextSection(), getProperty("toolAsName") ? "description" : "number")) {
-      onCommand(COMMAND_BREAK_CONTROL);
-    } else {
-      toolChecked = false;
-    }
+  }
+  if (isLastOperationForTool && shouldCheckToolBreakage(tool)) {
+    onCommand(COMMAND_BREAK_CONTROL);
+  } else {
+    toolChecked = false;
   }
 
   forceAny();
   forceCoolant = true;
 
-  if ((((getCurrentSectionId() + 1) >= getNumberOfSections()) ||
-    (tool.number != getNextSection().getTool().number)) && !toolChecked) {
+  if (isLastOperationForTool && !toolChecked) {
     prepareForToolCheck();
   }
 }

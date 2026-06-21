@@ -102,6 +102,36 @@ metric output. Use at least one feature whose center is not X0 Y0.
   preventing M30.
 - [ ] Archive failures appear in `results/archive-errors.log`.
 
+## Tool breakage detection
+
+- [ ] With all new settings disabled, Fusion's per-tool Break Control selection
+  still emits one G37 check.
+- [ ] Ignore Fusion tool library break detection flag suppresses a Fusion
+  Break Control selection when neither post selection includes that tool.
+- [ ] Every-tool and tool-list selections still work while Fusion flags are
+  ignored.
+- [ ] Ignore list of tools overrides Fusion Break Control, Check every tool,
+  and Check list of tools individually and when they are enabled together.
+- [ ] Spaces and duplicate entries in the ignore list are handled correctly.
+- [ ] Invalid ignore-list entries stop posting with a clear error.
+- [ ] Check every tool emits one G37 check after each non-probe tool's final
+  operation.
+- [ ] Check list of tools accepts comma-separated values with optional spaces.
+- [ ] Only used tools selected by the list receive G37 checks.
+- [ ] Duplicate list entries do not produce duplicate checks.
+- [ ] Invalid, empty-between-commas, zero, negative, and over-limit entries stop
+  posting with a clear error.
+- [ ] Probe-type tools do not receive automatic or list-selected G37 checks.
+- [ ] A selected final tool receives a G37 check before normal program end.
+- [ ] Fully retract disabled preserves the normal PathPilot G37 approach.
+- [ ] Fully retract enabled outputs spindle/coolant off and `G53 G0 Z0`
+  immediately before G37.
+- [ ] G53 Z0 clears the spindle from the ETS line of sight on the target machine.
+- [ ] Tool breakage tolerance is correct in inch and metric programs.
+- [ ] A passing tool resumes the next tool or program-end sequence correctly.
+- [ ] A failed tool produces the expected PathPilot alarm and prevents further
+  machining.
+
 ## Approval
 
 - [ ] All required rows and checks are complete.

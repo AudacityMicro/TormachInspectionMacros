@@ -39,6 +39,7 @@ REQUIRED_FILES = MACRO_FILES | {
     "Target Format.txt",
     "Tormach_Inspection.cps",
     "tests/test_m199.sh",
+    "tests/test_tool_breakage_logic.js",
 }
 
 TEXT_SUFFIXES = {".cps", ".md", ".nc", ".py", ".sh", ".txt", ".yml"}
@@ -202,7 +203,19 @@ def validate_post_contract(validation: Validation) -> None:
     post = (ROOT / "Tormach_Inspection.cps").read_text(encoding="ascii")
     required = [
         'title      : "Archive inspection results with M199"',
+        'title      : "Check every tool"',
+        'title      : "Check list of tools"',
+        'title      : "Ignore Fusion tool library break detection flag"',
+        'title      : "Ignore list of tools"',
+        'title      : "Fully retract before starting tool break detection"',
         'getProperty("programEndArchiveResults")',
+        'parseToolBreakageCheckList();',
+        'parseToolBreakageIgnoreList();',
+        'shouldCheckToolBreakage(tool)',
+        'getProperty("toolBreakageIgnoreFusionFlag")',
+        'getProperty("toolBreakageFullyRetract")',
+        'writeBlock(gFormat.format(53), gMotionModal.format(0), "Z0")',
+        'var isLastOperationForTool = isLastSection()',
         'inspectionLogLine("START")',
         'inspectionLogLine("END")',
         'writeBlock("o<initialize_inspection> call")',
@@ -210,6 +223,20 @@ def validate_post_contract(validation: Validation) -> None:
     ]
     for token in required:
         validation.require(token in post, f"Tormach_Inspection.cps: missing {token}")
+
+    break_control = post[
+        post.find("case COMMAND_BREAK_CONTROL:") : post.find("case COMMAND_TOOL_MEASURE:")
+    ]
+    break_control_order = [
+        break_control.find("prepareForToolCheck();"),
+        break_control.find('writeBlock(gFormat.format(53), gMotionModal.format(0), "Z0")'),
+        break_control.find('writeBlock(gFormat.format(37), "P"'),
+    ]
+    validation.require(
+        all(position >= 0 for position in break_control_order)
+        and break_control_order == sorted(break_control_order),
+        "Tormach_Inspection.cps: unsafe tool breakage preparation order",
+    )
 
     initialization = (ROOT / "initialize_inspection.nc").read_text(encoding="ascii")
     for variable in (

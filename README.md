@@ -223,8 +223,60 @@ name, location, and executable permission.
 
 ## Configure the Post
 
-Open the **Program End** group in Fusion's Post Process properties. The values
-are passed to static PathPilot macros through named global variables.
+The custom controls appear in **Tool Breakage Detection** and **Program End** in
+Fusion's Post Process properties.
+
+### Tool Breakage Detection
+
+Open **Tool Breakage Detection** in the Fusion post properties.
+
+| Setting | Default | Meaning |
+| --- | --- | --- |
+| Check every tool | Off | Run G37 after the final operation for every non-probe tool used by the program. |
+| Check list of tools | Blank | Comma-separated tool numbers to check, such as `1, 2, 7`. |
+| Ignore Fusion tool library break detection flag | Off | Ignore Fusion's per-tool Break Control setting and use only the post selections. |
+| Ignore list of tools | Blank | Comma-separated tools that must not receive automatic G37 checks. Overrides every selection source. |
+| Fully retract before starting tool break detection | Off | Stop spindle/coolant and output `G53 G0 Z0` immediately before G37. |
+| Tool breakage tolerance | `0.1` | G37 P tolerance in the active program units. |
+
+By default, tool selection is additive. A non-probe tool is checked when any of
+these are true:
+
+1. Fusion's existing tool **Break Control** option is enabled.
+2. **Check every tool** is enabled.
+3. Its tool number appears in **Check list of tools**.
+
+When **Ignore Fusion tool library break detection flag** is enabled, item 1 is
+ignored. Only **Check every tool** and **Check list of tools** select tools.
+
+**Ignore list of tools** is evaluated first and overrides every selection
+source. A tool in that list is not checked even when Fusion Break Control is
+enabled, **Check every tool** is enabled, or the tool also appears in **Check
+list of tools**.
+
+Spaces around list entries are accepted and duplicate numbers are ignored. Use
+whole tool numbers from 1 through 1000 without a `T` prefix. Invalid entries
+stop posting with an error. A listed tool that is not used in the program does
+nothing.
+
+Each selected tool is checked once after its last operation, immediately before
+the next tool change. The final tool in the program is also checked. Probe-type
+tools are excluded from the automatic settings and list to prevent sending the
+spindle probe to the electronic tool setter.
+
+When **Fully retract before starting tool break detection** is enabled, the
+sequence is:
+
+```text
+M5 M9
+G53 G0 Z0
+G37 P<tolerance>
+```
+
+`G53 Z0` is a machine coordinate. Confirm it is the safe fully retracted Z
+position on the specific machine before enabling this option. The option is
+intended for machines whose spindle blocks the electronic tool setter line of
+sight unless Z is fully retracted.
 
 ### Result archive setting
 
@@ -522,6 +574,23 @@ Library, reopen the Post Process dialog, and post again.
 - Check `~/gcode/results/archive-errors.log`.
 - Confirm the PathPilot system clock is correct.
 
+### Expected tool does not receive a breakage check
+
+- Confirm the tool is used by the posted program.
+- Enable **Check every tool**, enable Fusion's **Break Control** for that tool,
+  or add its number to **Check list of tools**.
+- If relying on Fusion's flag, confirm **Ignore Fusion tool library break
+  detection flag** is disabled.
+- Confirm the tool does not appear in **Ignore list of tools**.
+- Enter list values as whole numbers separated by commas, such as `1, 2, 7`.
+- Probe-type tools are intentionally excluded.
+
+### Tool break detection cannot see the ETS
+
+Enable **Fully retract before starting tool break detection** after confirming
+that `G53 Z0` is the machine's safe fully retracted position. The posted program
+must show `G53 G0 Z0` immediately before `G37`.
+
 ## Updating
 
 1. Download the current repository files.
@@ -546,6 +615,7 @@ On Linux or Git Bash, also run:
 ```text
 bash -n M199 tests/test_m199.sh
 bash tests/test_m199.sh
+node tests/test_tool_breakage_logic.js
 ```
 
 GitHub Actions runs these checks on pushes to `main` and on pull requests. The
